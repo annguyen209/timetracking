@@ -1,0 +1,60 @@
+.collapse.collapse-inline.in {
+	display: inline-block;
+}
+
+.collapsed-input-group {
+	margin: 2px;
+	padding: 5px;
+	display: inline-block;
+	outline: 1px solid;
+	outline-color: #EEE;
+}
+
+.stopwatch_ui {
+	display: none;
+}
+
+.stopwatch-icon {
+	padding-right: 0.5em;
+}
+
+.stopwatch_time_display {
+	display: inline-block;
+	width: 8em;
+	padding: 5px;
+	background-color: #FFF;
+	border: 1px solid;
+	border-color: #CCC;
+	border-radius: 4px;
+}
+
+span.ttreport_groupby_remove {
+	padding-left: 5px;
+}
+
+span.ttreport_groupby > span {
+	margin: 0px 2px;
+}
+
+span.ttreport_groupby_container {
+	margin: 0px 4px;
+}
+
+.ttreport_groupby:not(:last-child):after {
+    content:' » ';
+}
+
+.table-add-form .expenditure_date select{
+	display: inline-block;
+	margin-left: 5px;
+}
+
+.table-add-form .information textarea{
+	width: 100%!important;
+    min-height: 150px;
+}
+
+.table-add-form .time_spent .input-time input{
+	display: inline-block;
+    margin-right: 10px;
+}
