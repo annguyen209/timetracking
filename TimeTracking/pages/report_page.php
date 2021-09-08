@@ -74,7 +74,7 @@ $t_report->read_gpc_params();
 						$params += ['time_filter_category' => $t_report->time_filter_category];
 					}
 
-					//echo empty($t_report->time_filter_from) ? 'empty' : $t_report->time_filter_from;
+					$params += ['export_query' => 'False']; // debug: set true to export the query
 				?>
 				<form action="<?php echo plugin_page( 'billing_export_to_csv&' . http_build_query($params) ) ?>" method="post" class="form-inline" role="form">						
 						<input type="submit" class="btn btn-primary btn-sm btn-white btn-round no-float" name="Export" value="Export Detail CSV" style="margin-left: 5px;">

@@ -6,6 +6,7 @@
     $t_time_filter_to = !empty($_GET["time_filter_to"]) ? htmlspecialchars($_GET["time_filter_to"]) : null;
     $t_time_filter_user_id = !empty($_GET["time_filter_user_id"]) ? htmlspecialchars($_GET["time_filter_user_id"]) : null;
     $t_time_filter_category = !empty($_GET["time_filter_category"]) ? htmlspecialchars($_GET["time_filter_category"]) : null;
+    $t_export_query = !empty($_GET["export_query"]) ? (bool)htmlspecialchars($_GET["export_query"]) : false;
 
     $t_query = new \DbQuery();
     $t_sql = 'SELECT username, mantis_project_table.id as project, bug_id as issue, time_exp_date as exp_date, time_count, bugnote_id, info'
@@ -31,41 +32,53 @@
     if(!empty($t_time_filter_category)){
         $t_where[] = 'timetracking.category = ' . $t_query->param( (int)$t_time_filter_category);
     }
+   
     if(helper_get_current_project() > 0){
-        $t_where[] = 'mantis_project_table.id = ' . $t_query->param( (int)helper_get_current_project());
+        $t_project_id = helper_get_current_project();
+        $t_sub_project_ids = current_user_get_accessible_subprojects( $t_project_id);
+        $t_project_ids = array($t_project_id);
+        array_push($t_project_ids,...$t_sub_project_ids);
+        $t_where[] = 'mantis_project_table.id IN (' . implode($t_project_ids, ',') . ')';
     }
     if(!empty($t_where)){
         $t_sql = $t_sql . ' WHERE ' . implode($t_where, ' AND ');
     }
+    if($t_export_query){
+        ob_end_clean();
+        $fp = fopen('php://output','w');
+        fputcsv($fp, array($t_sql));
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . csv_get_default_filename());
+    }else{
+        $t_query->sql( $t_sql );
+        $t_result = $t_query->execute();
+        
+        ob_end_clean();
+        $fp = fopen('php://output','w');
     
-    $t_query->sql( $t_sql );
-    $t_result = $t_query->execute();
-    
-    ob_end_clean();
-    $fp = fopen('php://output','w');
-
-    fputcsv($fp, $t_headers);
-    
-    $t_result_array = array();
-    while( $t_row = db_fetch_array( $t_result ) ) {
-        $t_result_array[] = $t_row;
-    }
-    foreach( $t_result_array as $t_row ){
-        $data_row = array();
-        foreach( $t_row as $t_key => $t_value ) {
-            if( 'time_count' == $t_key ) {
-                array_push($data_row, seconds_to_hours( $t_value ));
-                //array_push($data_row, seconds_to_hms( $t_value ));                
-            } else {
-                array_push($data_row, Report::format_value( $t_key, $t_value , true)); 
-            }
+        fputcsv($fp, $t_headers);
+        
+        $t_result_array = array();
+        while( $t_row = db_fetch_array( $t_result ) ) {
+            $t_result_array[] = $t_row;
         }
-        fputcsv($fp, $data_row);
+        foreach( $t_result_array as $t_row ){
+            $data_row = array();
+            foreach( $t_row as $t_key => $t_value ) {
+                if( 'time_count' == $t_key ) {
+                    array_push($data_row, seconds_to_hours( $t_value ));
+                    //array_push($data_row, seconds_to_hms( $t_value ));                
+                } else {
+                    array_push($data_row, Report::format_value( $t_key, $t_value , true)); 
+                }
+            }
+            fputcsv($fp, $data_row);
+        }       
+    
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . csv_get_default_filename());
     }
     
-
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=' . csv_get_default_filename());
 
     exit();
 
